@@ -1,0 +1,98 @@
+{
+  "kind": "spec_vs_diff_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-08T18:12:42.079Z",
+  "summary": "Diff adds a frontend tracking pipeline (visitorId + local queue + periodic flush) and admin UI to view/export events, but backend persistence/admin-gated query/clear endpoints are not implemented; additionally there are API/type mismatches (frontend calls recordActivity with Principal-from-visitorId) that likely prevent end-to-end tracking.",
+  "missing_requirements": [
+    {
+      "id": "REQ-1",
+      "requirement": "Backend must persist a chronological activity log in stable state (upgrade-safe) with timestamp, eventType, visitorId and payload, enforce that non-admins can only write for themselves, restrict reading all events to admins, and provide admin-only list (with optional filters) and clear/delete endpoints.",
+      "reason": "backend/main.mo only defines an ActivityEvent type and an activityEvents map, but the only activity-related method shown is a stub (recordActivityEvent) that does not store anything. No admin-only list/query endpoints (with filtering) or clear/delete endpoints are shown. Stable-state upgrade persistence (preupgrade/postupgrade or stable vars) is not evident in the truncated backend/main.mo; migration.mo adds a field but does not demonstrate stable persistence mechanics in main.mo.",
+      "evidence": [
+        "backend/main.mo",
+        "backend/migration.mo",
+        "frontend/src/hooks/useQueries.ts"
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "requirement": "Frontend must send node/page views, answer submissions, proposal decision/attempt events, and ThinkFlow step text to backend with resilient buffering/retry that does not break UX.",
+      "reason": "Frontend logging/queueing exists, but the backend call uses actor.recordActivity(...) while backend/main.mo shows recordActivityEvent(...) and no recordActivity method. This mismatch suggests events will not actually be recorded in the backend as required.",
+      "evidence": [
+        "frontend/src/tracking/sendToBackend.ts",
+        "backend/main.mo",
+        "frontend/src/tracking/journeyEventLogger.ts"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "requirement": "Admin Dashboard Tracking tab must fetch backend events, support filtering/grouping by visitorId, allow viewing a visitor timeline, export backend events as JSON, and gate admin-only actions (like clearing events) behind existing admin auth flow.",
+      "reason": "Dashboard is updated to use useGetAllActivities and filter by visitorId and export, but there is no implemented backend endpoint evidence for getAllActivities/getUserActivities, and the clear/delete admin action is explicitly not implemented (placeholder throws).",
+      "evidence": [
+        "frontend/src/admin/AdminDashboardPage.tsx",
+        "frontend/src/hooks/useQueries.ts",
+        "backend/main.mo"
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "requirement": "Frontend must generate a consistent anonymous visitorId stored in localStorage and include it in all tracking submissions; admin views show visitorId and support filtering by it.",
+      "reason": "VisitorId is generated/stored and included in details, but sendToBackend converts queuedEvent.event.userId (which is a string like \"visitor_...\") to Principal.fromText, which will not be a valid principal. This likely prevents backend submissions from succeeding, undermining the requirement that visitorId is included in all tracking submissions.",
+      "evidence": [
+        "frontend/src/tracking/visitorId.ts",
+        "frontend/src/tracking/journeyEventLogger.ts",
+        "frontend/src/tracking/sendToBackend.ts"
+      ]
+    }
+  ],
+  "hallucinated_features": [
+    {
+      "description": "Added backend migration scaffolding with many unrelated types (file storage, external files, admin preferences, journey sessions) and a Principal-keyed activityEvents map not explicitly requested by the BuildRequest.",
+      "reason": "BuildRequest is specifically about customer activity tracking; the migration module introduces multiple non-tracking domains and structures beyond what was requested.",
+      "evidence": [
+        "backend/migration.mo"
+      ]
+    },
+    {
+      "description": "Local tracking of raw clicks and mouse movement in useActivityTracker.",
+      "reason": "Non-goals explicitly exclude capturing raw mouse-movement replays/low-signal tracking; this adds mousemove tracking (even if labeled minimal) beyond the requested high-signal events.",
+      "evidence": [
+        "frontend/src/tracking/useActivityTracker.ts"
+      ]
+    },
+    {
+      "description": "Audio/music system refactor and new/updated visual effects/theme work unrelated to activity tracking.",
+      "reason": "Not requested in the BuildRequest; these changes appear to be feature work outside the tracking/admin scope.",
+      "evidence": [
+        "frontend-file-summaries.txt"
+      ]
+    },
+    {
+      "description": "Introduced a frontend clear-all-activities mutation that always throws (placeholder).",
+      "reason": "REQ-3 expects admin-only clear/delete actions gated behind admin auth; implementing a UI hook that cannot work is not requested functionality and may be considered extraneous/unfinished feature scaffolding.",
+      "evidence": [
+        "frontend/src/hooks/useQueries.ts"
+      ]
+    }
+  ],
+  "confidence": 0.74,
+  "changed_files": [
+    "backend/main.mo",
+    "backend/migration.mo",
+    "frontend-file-summaries.txt",
+    "frontend/src/admin/AdminDashboardPage.tsx",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/journey/JourneyRenderer.tsx",
+    "frontend/src/journey/components/QuestionCard.tsx",
+    "frontend/src/journey/proposal/ProposalQuestion.tsx",
+    "frontend/src/journey/proposal/ThinkFlow.tsx",
+    "frontend/src/tracking/backendQueue.ts",
+    "frontend/src/tracking/journeyEventLogger.ts",
+    "frontend/src/tracking/sendToBackend.ts",
+    "frontend/src/tracking/storage.ts",
+    "frontend/src/tracking/useActivityTracker.ts",
+    "frontend/src/tracking/useBackgroundSync.ts",
+    "frontend/src/tracking/visitorId.ts",
+    "project_state.json"
+  ]
+}

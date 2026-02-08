@@ -1,0 +1,98 @@
+{
+  "kind": "build_request",
+  "title": "Add customer activity tracking for choices, typed inputs, and journey actions (admin viewable)",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "text": "Persist customer activity tracking to the Motoko backend so the site owner can review what each visitor did (pages/nodes visited, options chosen, and text the visitor submitted).",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "user-1"
+        ],
+        "quotes": [
+          "Make that so i can see what user or customer did and which options he chosen and what he written etc"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Backend stores a chronological log of activity events with at least: timestamp, eventType, visitorId (or equivalent anonymous identifier), and event payload (e.g., nodeId, selected options, submitted text).",
+        "Tracking data survives page refresh and canister upgrades (i.e., stored in stable state).",
+        "A non-admin caller can only write activity events for themselves/their visitorId; reading all events is restricted to admins.",
+        "Admin-only query endpoints exist to list events (with optional filtering such as by visitorId and time range) and to clear/delete events."
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Send high-signal journey events from the frontend to the backend: node/page views, answer submissions (selected options), and submitted text (including ThinkFlow step answers and QuestionCard text inputs).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "user-1"
+        ],
+        "quotes": [
+          "see what user or customer did and which options he chosen and what he written"
+        ]
+      },
+      "acceptanceCriteria": [
+        "When the current journey node changes, the frontend records a 'node-view' (or equivalent) event with the nodeId.",
+        "When a user submits an answer in QuestionCard, the frontend records an 'answer-submitted' event containing nodeId, selected option ids, and any textInputs payload.",
+        "When a user clicks YES / I need to think / NO-attempt in ProposalQuestion, the frontend records explicit decision/attempt events with relevant data (e.g., decision value, noAttempts).",
+        "When a user completes ThinkFlow steps and navigates back, the frontend records events containing the step number and the text submitted for that step.",
+        "Event sending is resilient: failures do not break the journey UX, and events can be retried or buffered client-side if the backend call fails."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Update the existing Admin Dashboard to display backend-tracked activity per visitor (timeline view) and allow exporting the tracked events as JSON.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "user-1"
+        ],
+        "quotes": [
+          "so i can see what user or customer did"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Admin Dashboard 'Tracking' tab shows events fetched from the backend (not only localStorage), ordered by time, and grouped or filterable by visitorId.",
+        "Admin can click a visitorId to see that visitor’s event timeline including options chosen and submitted text.",
+        "Admin Dashboard export downloads a JSON file that includes backend events (and can optionally include local journeyState as currently implemented).",
+        "Admin-only actions (e.g., clearing events) are gated behind the existing admin authentication UI flow."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Introduce a consistent anonymous visitor identifier on the frontend so customer actions can be tied together across pages and sessions without requiring login.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "user-1"
+        ],
+        "quotes": [
+          "what user or customer did"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Frontend generates a visitorId once and persists it in localStorage (or equivalent) and includes it in all tracking event submissions to the backend.",
+        "If a visitor clears storage or uses a new device/browser, a new visitorId is generated and treated as a new visitor.",
+        "Admin views show visitorId for each event and support filtering by visitorId."
+      ]
+    }
+  ],
+  "constraints": [
+    "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
+    "Do not edit files in frontend immutable paths (frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui).",
+    "Use English for all user-facing text added or modified."
+  ],
+  "nonGoals": [
+    "Integrating third-party analytics tools (Google Analytics, Hotjar, etc.).",
+    "Real-time/live session replay or WebSocket-based streaming of events.",
+    "Capturing every raw keystroke or full mouse-movement replays; tracking should focus on meaningful actions (choices and submitted text).",
+    "Adding new authentication providers beyond existing mechanisms."
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  }
+}

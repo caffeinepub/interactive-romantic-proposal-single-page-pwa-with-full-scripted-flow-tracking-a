@@ -1,0 +1,72 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-send-high-signal-journey-events-from-the-frontend-to-the-backend-node-page-views-answer-submissions-selected-options-and-submitted-text-including-thinkflow-step-answers-and-questioncard-text-inputs",
+      "featureTitle": "Send high-signal journey events from the frontend to the backend: node/page views, answer submissions (selected options), and submitted text (including ThinkFlow step answers and QuestionCard text inputs).",
+      "files": [
+        "frontend/src/journey/JourneyRenderer.tsx",
+        "frontend/src/journey/components/QuestionCard.tsx",
+        "frontend/src/journey/proposal/ProposalQuestion.tsx",
+        "frontend/src/journey/proposal/ThinkFlow.tsx",
+        "frontend/src/tracking/backendQueue.ts",
+        "frontend/src/tracking/journeyEventLogger.ts",
+        "frontend/src/tracking/sendToBackend.ts",
+        "frontend/src/tracking/useActivityTracker.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-the-existing-admin-dashboard-to-display-backend-tracked-activity-per-visitor-timeline-view-and-allow-exporting-the-tracked-events-as-json",
+      "featureTitle": "Update the existing Admin Dashboard to display backend-tracked activity per visitor (timeline view) and allow exporting the tracked events as JSON.",
+      "files": [
+        "frontend/src/admin/AdminDashboardPage.tsx",
+        "frontend/src/tracking/storage.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-3"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-introduce-a-consistent-anonymous-visitor-identifier-on-the-frontend-so-customer-actions-can-be-tied-together-across-pages-and-sessions-without-requiring-login",
+      "featureTitle": "Introduce a consistent anonymous visitor identifier on the frontend so customer actions can be tied together across pages and sessions without requiring login.",
+      "files": [
+        "frontend/src/admin/AdminDashboardPage.tsx",
+        "frontend/src/tracking/journeyEventLogger.ts",
+        "frontend/src/tracking/visitorId.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

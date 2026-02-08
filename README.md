@@ -1,2 +1,3 @@
-# interactive-romantic-proposal-single-page-pwa-with-full-scripted-flow-tracking-a
-Exported from Caffeine project: Add customer activity tracking for choices, typed inputs, and journey actions (admin viewable)
+## 
+
+To run app build and run docker image: `docker build -t app . docker run -it --network host app`

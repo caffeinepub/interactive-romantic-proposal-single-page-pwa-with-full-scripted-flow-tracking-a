@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 3,
+  "summary": "Website needs visitor activity tracking so the owner can see what users/customers did on the site (actions taken, options chosen, and what they typed/submitted).",
+  "architectural_notes": [],
+  "known_issues": [],
+  "isFixRequest": false,
+  "existing_features": [
+    {
+      "id": "feature-send-high-signal-journey-events-from-the-frontend-to-the-backend-node-page-views-answer-submissions-selected-options-and-submitted-text-including-thinkflow-step-answers-and-questioncard-text-inputs",
+      "title": "Send high-signal journey events from the frontend to the backend: node/page views, answer submissions (selected options), and submitted text (including ThinkFlow step answers and QuestionCard text inputs).",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-existing-admin-dashboard-to-display-backend-tracked-activity-per-visitor-timeline-view-and-allow-exporting-the-tracked-events-as-json",
+      "title": "Update the existing Admin Dashboard to display backend-tracked activity per visitor (timeline view) and allow exporting the tracked events as JSON.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-introduce-a-consistent-anonymous-visitor-identifier-on-the-frontend-so-customer-actions-can-be-tied-together-across-pages-and-sessions-without-requiring-login",
+      "title": "Introduce a consistent anonymous visitor identifier on the frontend so customer actions can be tied together across pages and sessions without requiring login.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Add visitor/user activity tracking to record what users did on the website (pages viewed, options chosen/clicked, and form inputs/submissions) so the owner can review customer behavior.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Persist customer activity tracking to the Motoko backend so the site owner can review what each visitor did (pages/nodes visited, options chosen, and text the visitor submitted).",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "status": "pending"
+    }
+  ],
+  "projectName": "Add customer activity tracking for choices, typed inputs, and journey actions (admin viewable)",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

@@ -1,0 +1,128 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "Frontend activity tracking (anonymous visitorId) + admin timeline/export backed by backend events",
+  "requirements": [
+    {
+      "id": "REQ-2",
+      "summary": "Capture high-signal journey events (node views, answers, decisions, ThinkFlow text) and send them resiliently to the backend.",
+      "acceptanceCriteria": [
+        "When the current journey node changes, the frontend records a 'node-view' (or equivalent) event with the nodeId.",
+        "When a user submits an answer in QuestionCard, the frontend records an 'answer-submitted' event containing nodeId, selected option ids, and any textInputs payload.",
+        "When a user clicks YES / I need to think / NO-attempt in ProposalQuestion, the frontend records explicit decision/attempt events with relevant data (e.g., decision value, noAttempts).",
+        "When a user completes ThinkFlow steps and navigates back, the frontend records events containing the step number and the text submitted for that step.",
+        "Event sending is resilient: failures do not break the journey UX, and events can be retried or buffered client-side if the backend call fails."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/tracking/backendQueue.ts",
+          "operation": "create",
+          "description": "Create a small client-side queue (localStorage-backed) to buffer tracking events for backend submission, with retry metadata and safe JSON serialization. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/tracking/sendToBackend.ts",
+          "operation": "create",
+          "description": "Add a sender utility that takes queued events and attempts to submit them via the backend actor (best-effort, non-blocking), handling authorization/network errors gracefully and leaving events queued for retry. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/tracking/journeyEventLogger.ts",
+          "operation": "create",
+          "description": "Implement a focused logger API for journey events (node-view, answer-submitted, proposal decision/attempt, ThinkFlow step answer) that enriches payloads with visitorId and timestamps, writes to local queue, and triggers background flush. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/journey/JourneyRenderer.tsx",
+          "operation": "modify",
+          "description": "On node change, record a 'node-view' event with nodeId; on QuestionCard answer submission, record an 'answer-submitted' event with nodeId, selected option ids, and textInputs before transitioning state. Ensure failures never block navigation. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/journey/components/QuestionCard.tsx",
+          "operation": "modify",
+          "description": "Ensure submitted payload includes option ids + textInputs in a consistent shape suitable for tracking (no UI changes required beyond guaranteeing the data shape). Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/journey/proposal/ProposalQuestion.tsx",
+          "operation": "modify",
+          "description": "Record explicit events for YES, THINK, and NO-attempt clicks including decision value and noAttempts; ensure event recording does not affect button responsiveness. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/journey/proposal/ThinkFlow.tsx",
+          "operation": "modify",
+          "description": "Record step-answer events containing step number and submitted text when progressing steps and when navigating back to the proposal; ensure final/back actions also flush queued events in the background. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/tracking/useActivityTracker.ts",
+          "operation": "modify",
+          "description": "De-emphasize/disable low-signal mouse/scroll tracking for backend submission (retain local-only behavior if desired), and/or ensure only meaningful journey events are sent to backend per requirements. Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Update Admin Dashboard Tracking tab to fetch and display backend-tracked events per visitor, support filtering/timeline view, and export events as JSON.",
+      "acceptanceCriteria": [
+        "Admin Dashboard 'Tracking' tab shows events fetched from the backend (not only localStorage), ordered by time, and grouped or filterable by visitorId.",
+        "Admin can click a visitorId to see that visitor’s event timeline including options chosen and submitted text.",
+        "Admin Dashboard export downloads a JSON file that includes backend events (and can optionally include local journeyState as currently implemented).",
+        "Admin-only actions (e.g., clearing events) are gated behind the existing admin authentication UI flow."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/admin/useBackendActivityEvents.ts",
+          "operation": "create",
+          "description": "Create a React hook (using react-query) to fetch backend activity events for admin views, normalize them into a UI-friendly shape (parse details JSON when applicable), and support client-side filtering by visitorId/time range. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/admin/AdminDashboardPage.tsx",
+          "operation": "modify",
+          "description": "Update the Tracking tab to display backend events (timeline ordered by timestamp) with visitorId grouping/filtering and a drill-in view for a selected visitor; keep existing localStorage tracking view as optional secondary data. Add Export JSON that includes backend events plus optional local journeyState/local events. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/admin/AdminDashboardPage.tsx",
+          "operation": "modify",
+          "description": "Add an admin-only 'Clear backend events' UI action gated by the existing admin password flow; wire it to a backend capability expected from REQ-1 (call via actor using a safe feature-detect pattern) and handle unauthorized/errors with user-friendly English messages. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/admin/AdminRouter.tsx",
+          "operation": "modify",
+          "description": "Ensure the admin-authenticated area initializes/refreshes backend event queries only after the existing admin authentication UI flow is satisfied, and shows a clear English error state if backend access is unauthorized. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/tracking/storage.ts",
+          "operation": "modify",
+          "description": "Extend local tracking storage helpers so Admin export can include both local events and backend events in a consistent JSON structure (without changing immutable UI component files). Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Introduce and persist an anonymous visitorId on the frontend and attach it to all tracking events and admin filtering.",
+      "acceptanceCriteria": [
+        "Frontend generates a visitorId once and persists it in localStorage (or equivalent) and includes it in all tracking event submissions to the backend.",
+        "If a visitor clears storage or uses a new device/browser, a new visitorId is generated and treated as a new visitor.",
+        "Admin views show visitorId for each event and support filtering by visitorId."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/tracking/visitorId.ts",
+          "operation": "create",
+          "description": "Create a visitorId utility that generates a stable anonymous identifier (stored in localStorage) and exposes getOrCreateVisitorId() for use across tracking/logging. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/tracking/journeyEventLogger.ts",
+          "operation": "modify",
+          "description": "Enrich every tracked event with visitorId from the visitorId utility and ensure it is included in the backend-submitted payload (e.g., in a structured details field). Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/admin/useBackendActivityEvents.ts",
+          "operation": "modify",
+          "description": "Extract/show visitorId from backend event payloads (e.g., parsed details) and expose filtering/grouping by visitorId for the Admin Dashboard. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/admin/AdminDashboardPage.tsx",
+          "operation": "modify",
+          "description": "Add visitorId filter UI (search/select) and ensure visitorId is visible in the event list and in the visitor drill-in timeline. Verify the component's usage instructions before implementing."
+        }
+      ]
+    }
+  ]
+}

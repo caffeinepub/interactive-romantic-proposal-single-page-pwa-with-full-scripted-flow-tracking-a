@@ -1,0 +1,16 @@
+{
+  "name": "Romantic Proposal",
+  "short_name": "Proposal",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fff8dc",
+  "theme_color": "#d4416c",
+  "description": "An interactive romantic proposal experience",
+  "icons": [
+    {
+      "src": "/assets/generated/heart-particle.dim_128x128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    }
+  ]
+}
